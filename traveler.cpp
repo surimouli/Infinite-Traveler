@@ -2,8 +2,6 @@
 
 #include <algorithm>
 #include <random>
-#include <sstream>
-#include <iostream>
 
 TravelerEngine::TravelerEngine(OpenSkyClient client) : client_(std::move(client)) {}
 
@@ -30,19 +28,29 @@ HopResult TravelerEngine::tick(TravelerState& st, long nowUtc) {
     return out;
   }
 
-  // Initialize sim_time_utc on first run: set traveler time to (now - lag)
+  // Initialize story time: traveler lives ~1 day behind
   if (st.sim_time_utc == 0) {
     st.sim_time_utc = nowUtc - st.lag_seconds;
   }
 
-  // We will look in a window ending near sim_time_utc + a bit, but OpenSky airport endpoints
-  // are historical; simplest: query [sim_time - lookback, sim_time + lookahead]
-  long windowEnd = st.sim_time_utc + 12 * 3600; // small lookahead in story time
-  long windowBegin = windowEnd - (long)st.lookback_hours * 3600;
+  // Build a query window around the traveler story time.
+  // We include a little lookahead so we can find the "next" departure.
+  long windowEnd = st.sim_time_utc + 12 * 3600;               // 12h lookahead
+  long windowBegin = windowEnd - (long)st.lookback_hours * 3600; // e.g., 36h lookback
 
-  // OpenSky limit: window <= 2 days (172800 seconds). Ensure it.
+  // Hard cap by seconds (OpenSky limit is 2 days)
   if (windowEnd - windowBegin > 172800) {
     windowBegin = windowEnd - 172800;
+  }
+
+  // OpenSky ALSO enforces "at most 2 UTC calendar days" (partitions).
+  // If [begin,end] spans 3 different UTC days, clamp begin to start of (endDay - 1).
+  auto dayIndex = [](long t) -> long { return t / 86400; }; // UTC day partition
+  long endDay = dayIndex(windowEnd);
+  long beginDay = dayIndex(windowBegin);
+
+  if (endDay - beginDay > 1) {
+    windowBegin = (endDay - 1) * 86400; // start of previous UTC day
   }
 
   std::vector<Flight> flights;
@@ -65,7 +73,6 @@ HopResult TravelerEngine::tick(TravelerState& st, long nowUtc) {
 
   if (candidates.empty()) {
     // Move story time forward a bit and try again next tick.
-    // This is our “keep searching” mechanism without burning API calls too often.
     st.sim_time_utc += 3 * 3600;          // advance story time 3 hours
     st.next_event_utc = nowUtc + 5 * 60;  // re-check in 5 minutes
     out.reason = "No candidates in window; advanced story time + scheduled recheck.";
@@ -76,7 +83,7 @@ HopResult TravelerEngine::tick(TravelerState& st, long nowUtc) {
   long minDepart = candidates[0].firstSeen;
   for (const auto& f : candidates) minDepart = std::min(minDepart, f.firstSeen);
 
-  // Collect all with that earliest departure time
+  // Collect all flights with that earliest departure time
   std::vector<Flight> earliest;
   for (const auto& f : candidates) {
     if (f.firstSeen == minDepart) earliest.push_back(f);
@@ -99,7 +106,8 @@ HopResult TravelerEngine::tick(TravelerState& st, long nowUtc) {
   long departUtc = chosen.firstSeen;
   long arriveUtc = (chosen.lastSeen > 0 ? chosen.lastSeen : (departUtc + 2 * 3600));
 
-  // Real-time waiting: compute real time until "arrival"
+  // Real-time waiting: compute how long the flight took in story time,
+  // then wait that long in real time (via next_event_utc).
   long flightDuration = std::max(60L, arriveUtc - departUtc); // at least 60 sec
   st.next_event_utc = nowUtc + flightDuration;
 
