@@ -141,7 +141,9 @@ int main() {
   // Add as GitHub secrets: OPENSKY_USER / OPENSKY_PASS if you want.
   const char* user = std::getenv("OPENSKY_USER");
   const char* pass = std::getenv("OPENSKY_PASS");
-  OpenSkyClient client(user ? user : "", pass ? pass : "");
+  //OpenSkyClient client(user ? user : "", pass ? pass : "");
+
+  OpenSkyClient client("", "");
 
   TravelerEngine engine(client);
 
