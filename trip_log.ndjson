@@ -1,1 +1,2 @@
 {"logged_at_utc":1765840332,"from":"KCVG","to":"KMCO","depart_utc":1765785572,"arrive_utc":1765791273,"icao24":"c044b2","callsign":"CSB925","reason":"Hopped (earliest + random tie-break, avoided recent airport)."}
+{"hop":1,"logged_at_utc":1765840693,"from":"KCVG","to":"KMCO","depart_utc":1765785572,"arrive_utc":1765791273,"icao24":"c044b2","callsign":"CSB925","reason":"Hopped (earliest + random tie-break, avoided recent airport)."}

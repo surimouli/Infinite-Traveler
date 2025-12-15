@@ -1,10 +1,10 @@
 {
-  "current_airport": "KCVG",
-  "sim_time_utc": 0,
-  "next_event_utc": 0,
+  "current_airport": "KMCO",
+  "sim_time_utc": 1765791273,
+  "next_event_utc": 1765846394,
   "lag_seconds": 86400,
   "lookback_hours": 36,
   "avoid_recent_n": 10,
-  "hop_count": 0,
-  "recent_airports": []
+  "hop_count": 1,
+  "recent_airports": ["KMCO"]
 }
