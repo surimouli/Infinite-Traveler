@@ -76,7 +76,12 @@ static std::vector<std::string> extractRecentAirports(const std::string& json) {
   return out;
 }
 
-static TravelerState loadState(const std::string& path) {
+// --- NEW: hop_count stored in state.json ---
+static long extractJsonHopCount(const std::string& json) {
+  return extractJsonLong(json, "hop_count", 0);
+}
+
+static TravelerState loadState(const std::string& path, long& hopCount) {
   TravelerState st;
   std::string json = readFile(path);
 
@@ -88,10 +93,11 @@ static TravelerState loadState(const std::string& path) {
   st.avoid_recent_n  = extractJsonInt(json, "avoid_recent_n", 10);
   st.recent_airports = extractRecentAirports(json);
 
+  hopCount = extractJsonHopCount(json);
   return st;
 }
 
-static std::string toJson(const TravelerState& st) {
+static std::string toJson(const TravelerState& st, long hopCount) {
   std::ostringstream o;
   o << "{\n";
   o << "  \"current_airport\": \"" << st.current_airport << "\",\n";
@@ -100,6 +106,7 @@ static std::string toJson(const TravelerState& st) {
   o << "  \"lag_seconds\": " << st.lag_seconds << ",\n";
   o << "  \"lookback_hours\": " << st.lookback_hours << ",\n";
   o << "  \"avoid_recent_n\": " << st.avoid_recent_n << ",\n";
+  o << "  \"hop_count\": " << hopCount << ",\n";
   o << "  \"recent_airports\": [";
   for (size_t i = 0; i < st.recent_airports.size(); i++) {
     o << "\"" << st.recent_airports[i] << "\"";
@@ -114,9 +121,11 @@ static void appendLogNdjson(const std::string& path,
                             long loggedAtUtc,
                             const TravelerState& before,
                             const HopResult& hop,
-                            const TravelerState& after) {
+                            const TravelerState& after,
+                            long hopNumber) {
   std::ofstream out(path, std::ios::app);
   out << "{";
+  out << "\"hop\":" << hopNumber << ",";
   out << "\"logged_at_utc\":" << loggedAtUtc << ",";
   out << "\"from\":\"" << before.current_airport << "\",";
   out << "\"to\":\"" << after.current_airport << "\",";
@@ -128,10 +137,60 @@ static void appendLogNdjson(const std::string& path,
   out << "}\n";
 }
 
+static std::string formatUtc(long t) {
+  std::time_t tt = (std::time_t)t;
+  std::tm g{};
+#if defined(_WIN32)
+  gmtime_s(&g, &tt);
+#else
+  g = *std::gmtime(&tt);
+#endif
+  char buf[64];
+  std::strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M UTC", &g);
+  return std::string(buf);
+}
+
+static void writeLatestCaption(const std::string& from,
+                               const std::string& to,
+                               long hopNumber,
+                               long departUtc,
+                               long arriveUtc,
+                               const std::string& callsign,
+                               const std::string& vibeLine) {
+  std::ostringstream c;
+  c << "Hop #" << hopNumber << " ✈️\n";
+  c << from << " → " << to << "\n";
+  if (!callsign.empty()) c << "Flight: " << callsign << "\n";
+  c << "Depart: " << formatUtc(departUtc) << "\n";
+  c << "Arrive: " << formatUtc(arriveUtc) << "\n\n";
+  c << vibeLine << "\n\n";
+  c << "#airport #travel #aviation #wanderlust #planespotting\n";
+  writeFile("latest_caption.txt", c.str());
+}
+
+static void writeLatestPostJson(const TravelerState& before,
+                                const TravelerState& after,
+                                const HopResult& hop,
+                                long hopNumber) {
+  std::ostringstream j;
+  j << "{\n";
+  j << "  \"hop\": " << hopNumber << ",\n";
+  j << "  \"from\": \"" << before.current_airport << "\",\n";
+  j << "  \"to\": \"" << after.current_airport << "\",\n";
+  j << "  \"depart_utc\": " << hop.depart_utc << ",\n";
+  j << "  \"arrive_utc\": " << hop.arrive_utc << ",\n";
+  j << "  \"icao24\": \"" << hop.flight.icao24 << "\",\n";
+  j << "  \"callsign\": \"" << hop.flight.callsign << "\",\n";
+  j << "  \"reason\": \"" << hop.reason << "\"\n";
+  j << "}\n";
+  writeFile("latest_post.json", j.str());
+}
+
 int main() {
   long now = nowUtc();
 
-  TravelerState st = loadState("state.json");
+  long hopCount = 0;
+  TravelerState st = loadState("state.json", hopCount);
 
   const char* token = std::getenv("OPENSKY_TOKEN");
   if (!token || std::string(token).empty()) {
@@ -145,10 +204,18 @@ int main() {
   TravelerState before = st;
   HopResult hop = engine.tick(st, now);
 
-  writeFile("state.json", toJson(st));
-
   if (hop.didHop) {
-    appendLogNdjson("trip_log.ndjson", now, before, hop, st);
+    hopCount += 1;
+    appendLogNdjson("trip_log.ndjson", now, before, hop, st, hopCount);
+
+    // Cute vibe line (we can make this fancier later)
+    std::string vibe = "Current mood: gate snacks + main character energy.";
+
+    writeLatestCaption(before.current_airport, st.current_airport, hopCount,
+                       hop.depart_utc, hop.arrive_utc, hop.flight.callsign, vibe);
+
+    writeLatestPostJson(before, st, hop, hopCount);
+
     std::cout << "HOP: " << before.current_airport << " -> " << st.current_airport
               << " depart=" << hop.depart_utc
               << " arrive=" << hop.arrive_utc
@@ -160,6 +227,9 @@ int main() {
               << " sim_time_utc=" << st.sim_time_utc
               << "\n";
   }
+
+  // Save state every run
+  writeFile("state.json", toJson(st, hopCount));
 
   return 0;
 }
