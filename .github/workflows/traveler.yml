@@ -2,7 +2,7 @@ name: Traveler Tick
 
 on:
   schedule:
-    - cron: "*/5 * * * *"  # runs every 5 minutes (UTC)
+    - cron: "*/5 * * * *" # every 5 minutes (UTC)
   workflow_dispatch:
 
 permissions:
@@ -12,26 +12,51 @@ jobs:
   tick:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install build dependencies
+      - name: Install build deps
         run: |
           sudo apt-get update
-          sudo apt-get install -y g++ libcurl4-openssl-dev
+          sudo apt-get install -y g++ libcurl4-openssl-dev python3
 
-      - name: Build traveler
+      - name: Build
         run: |
           g++ -std=c++20 -O2 -o traveler main.cpp opensky_client.cpp traveler.cpp -lcurl
 
+      - name: Get OpenSky OAuth token
+        env:
+          OPENSKY_CLIENT_ID: ${{ secrets.OPENSKY_CLIENT_ID }}
+          OPENSKY_CLIENT_SECRET: ${{ secrets.OPENSKY_CLIENT_SECRET }}
+        run: |
+          if [ -z "$OPENSKY_CLIENT_ID" ] || [ -z "$OPENSKY_CLIENT_SECRET" ]; then
+            echo "Missing OPENSKY_CLIENT_ID/OPENSKY_CLIENT_SECRET secrets."
+            exit 1
+          fi
+
+          TOKEN_JSON=$(curl -sS -X POST "https://auth.opensky-network.org/auth/realms/opensky-network/protocol/openid-connect/token" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -d "grant_type=client_credentials" \
+            -d "client_id=$OPENSKY_CLIENT_ID" \
+            -d "client_secret=$OPENSKY_CLIENT_SECRET")
+
+          TOKEN=$(echo "$TOKEN_JSON" | python3 -c "import sys, json; print(json.load(sys.stdin).get('access_token',''))")
+
+          if [ -z "$TOKEN" ]; then
+            echo "Failed to obtain access token. Response:"
+            echo "$TOKEN_JSON"
+            exit 1
+          fi
+
+          echo "OPENSKY_TOKEN=$TOKEN" >> $GITHUB_ENV
+
       - name: Run one tick
         env:
-          OPENSKY_USER: ${{ secrets.OPENSKY_USER }}
-          OPENSKY_PASS: ${{ secrets.OPENSKY_PASS }}
+          OPENSKY_TOKEN: ${{ env.OPENSKY_TOKEN }}
         run: |
           ./traveler
 
-      - name: Commit updated state and log
+      - name: Commit updated state/log
         run: |
           git config user.name "traveler-bot"
           git config user.email "traveler-bot@users.noreply.github.com"

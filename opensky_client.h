@@ -13,7 +13,7 @@ struct Flight {
 
 class OpenSkyClient {
  public:
-  OpenSkyClient(std::string username = "", std::string password = "");
+  explicit OpenSkyClient(std::string bearerToken = "");
 
   // Fetch departures from an airport in [begin,end] unix seconds (UTC).
   std::vector<Flight> getDepartures(const std::string& airportIcao,
@@ -21,8 +21,6 @@ class OpenSkyClient {
                                    long endUtc);
 
  private:
-  std::string username_;
-  std::string password_;
-
+  std::string bearerToken_;
   std::string httpGet(const std::string& url);
 };

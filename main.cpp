@@ -5,13 +5,10 @@
 #include <iostream>
 #include <sstream>
 #include <ctime>
+#include <cctype>
+#include <cstdlib>
 
-// --- Tiny JSON-ish state load/save (simple, no external dependency) ---
-// State file is small. This parser is intentionally lightweight.
-
-static long nowUtc() {
-  return (long)std::time(nullptr);
-}
+static long nowUtc() { return (long)std::time(nullptr); }
 
 static std::string readFile(const std::string& path) {
   std::ifstream in(path);
@@ -67,7 +64,6 @@ static std::vector<std::string> extractRecentAirports(const std::string& json) {
   if (p == std::string::npos || q == std::string::npos || q <= p) return out;
   std::string arr = json.substr(p + 1, q - p - 1);
 
-  // Split by quotes
   size_t i = 0;
   while (true) {
     auto a = arr.find('"', i);
@@ -115,13 +111,13 @@ static std::string toJson(const TravelerState& st) {
 }
 
 static void appendLogNdjson(const std::string& path,
-                            long nowUtc,
+                            long loggedAtUtc,
                             const TravelerState& before,
                             const HopResult& hop,
                             const TravelerState& after) {
   std::ofstream out(path, std::ios::app);
   out << "{";
-  out << "\"logged_at_utc\":" << nowUtc << ",";
+  out << "\"logged_at_utc\":" << loggedAtUtc << ",";
   out << "\"from\":\"" << before.current_airport << "\",";
   out << "\"to\":\"" << after.current_airport << "\",";
   out << "\"depart_utc\":" << hop.depart_utc << ",";
@@ -137,20 +133,18 @@ int main() {
 
   TravelerState st = loadState("state.json");
 
-  // Optional OpenSky basic auth from environment variables
-  // Add as GitHub secrets: OPENSKY_USER / OPENSKY_PASS if you want.
-  const char* user = std::getenv("OPENSKY_USER");
-  const char* pass = std::getenv("OPENSKY_PASS");
-  //OpenSkyClient client(user ? user : "", pass ? pass : "");
+  const char* token = std::getenv("OPENSKY_TOKEN");
+  if (!token || std::string(token).empty()) {
+    std::cout << "NO HOP: Missing OPENSKY_TOKEN env var.\n";
+    return 0;
+  }
 
-  OpenSkyClient client("", "");
-
+  OpenSkyClient client(token);
   TravelerEngine engine(client);
 
   TravelerState before = st;
   HopResult hop = engine.tick(st, now);
 
-  // Save state every run (even if no hop) so next_event advances persistently
   writeFile("state.json", toJson(st));
 
   if (hop.didHop) {
