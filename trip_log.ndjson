@@ -1,3 +1,4 @@
 {"logged_at_utc":1765840332,"from":"KCVG","to":"KMCO","depart_utc":1765785572,"arrive_utc":1765791273,"icao24":"c044b2","callsign":"CSB925","reason":"Hopped (earliest + random tie-break, avoided recent airport)."}
 {"hop":1,"logged_at_utc":1765840693,"from":"KCVG","to":"KMCO","depart_utc":1765785572,"arrive_utc":1765791273,"icao24":"c044b2","callsign":"CSB925","reason":"Hopped (earliest + random tie-break, avoided recent airport)."}
 {"hop":2,"logged_at_utc":1765849234,"from":"KMCO","to":"KMCO","depart_utc":1765794625,"arrive_utc":1765796378,"icao24":"a34e01","callsign":"JBU499","reason":"Hopped (earliest + random tie-break)."}
+{"hop":3,"logged_at_utc":1765857901,"from":"KMCO","to":"KJFK","depart_utc":1765807187,"arrive_utc":1765814812,"icao24":"aaf183","callsign":"JBU1584","reason":"Hopped (earliest + random tie-break, avoided recent airport)."}
