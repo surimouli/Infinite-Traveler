@@ -5,3 +5,4 @@
 {"hop":4,"logged_at_utc":1765867199,"from":"KJFK","to":"KRSW","depart_utc":1765814987,"arrive_utc":1765823959,"icao24":"a445d9","callsign":"DAL2320","reason":"Hopped (earliest + random tie-break, avoided recent airport)."}
 {"hop":5,"logged_at_utc":1765876470,"from":"KRSW","to":"KATL","depart_utc":1765824457,"arrive_utc":1765828956,"icao24":"a7081a","callsign":"DAL1474","reason":"Hopped (earliest + random tie-break, avoided recent airport)."}
 {"hop":6,"logged_at_utc":1765881067,"from":"KATL","to":"KTPA","depart_utc":1765828963,"arrive_utc":1765832597,"icao24":"a93631","callsign":"DAL1720","reason":"Hopped (earliest + random tie-break, avoided recent airport)."}
+{"hop":7,"logged_at_utc":1765885001,"from":"KTPA","to":"KBNA","depart_utc":1765833192,"arrive_utc":1765838979,"icao24":"abdcbe","callsign":"SWA1919","reason":"Hopped (earliest + random tie-break, avoided recent airport)."}
