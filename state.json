@@ -1,10 +1,10 @@
 {
-  "current_airport": "KJFK",
-  "sim_time_utc": 1765814812,
-  "next_event_utc": 1765865526,
+  "current_airport": "KRSW",
+  "sim_time_utc": 1765823959,
+  "next_event_utc": 1765876171,
   "lag_seconds": 86400,
   "lookback_hours": 36,
   "avoid_recent_n": 10,
-  "hop_count": 3,
-  "recent_airports": ["KMCO", "KMCO", "KJFK"]
+  "hop_count": 4,
+  "recent_airports": ["KMCO", "KMCO", "KJFK", "KRSW"]
 }
