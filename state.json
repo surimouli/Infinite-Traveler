@@ -1,7 +1,7 @@
 {
   "current_airport": "KBNA",
-  "sim_time_utc": 1765946979,
-  "next_event_utc": 1765903169,
+  "sim_time_utc": 1765957779,
+  "next_event_utc": 1765904575,
   "lag_seconds": 86400,
   "lookback_hours": 36,
   "avoid_recent_n": 10,
