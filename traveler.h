@@ -4,14 +4,14 @@
 #include <vector>
 
 struct TravelerState {
-  std::string current_airport;
-  long sim_time_utc = 0;
-  long next_event_utc = 0;
-  long lag_seconds = 86400;
-  int lookback_hours = 36;
+  std::string current_airport;   // ICAO like "KCVG"
+  long sim_time_utc = 0;         // traveler story time (UTC unix)
+  long next_event_utc = 0;       // when bot should act next in real time
+  long lag_seconds = 86400;      // 24h lag
+  int lookback_hours = 36;       // used as lookAHEAD hours now
   int avoid_recent_n = 10;
 
-  std::string personality = "chaotic";
+  std::string personality = "chaotic"; // chaotic / budget / scenic
 
   std::vector<std::string> recent_airports;
 };
@@ -31,6 +31,7 @@ class TravelerEngine {
 
  private:
   OpenSkyClient client_;
+
   bool isRecentlyVisited(const TravelerState& st, const std::string& airport) const;
   void pushRecent(TravelerState& st, const std::string& airport) const;
 

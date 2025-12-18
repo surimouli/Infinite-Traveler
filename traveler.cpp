@@ -51,28 +51,39 @@ double TravelerEngine::scoreFlight(const TravelerState& st, const Flight& f) con
 HopResult TravelerEngine::tick(TravelerState& st, long nowUtc) {
   HopResult out;
 
+  // Real-time waiting gate
   if (st.next_event_utc > 0 && nowUtc < st.next_event_utc) {
     out.reason = "Not time yet.";
     return out;
   }
 
+  // Initialize story time if first run
   if (st.sim_time_utc == 0) {
     st.sim_time_utc = nowUtc - st.lag_seconds;
   }
 
-  long windowEnd = st.sim_time_utc + 12 * 3600;
-  long windowBegin = windowEnd - (long)st.lookback_hours * 3600;
-
-  if (windowEnd - windowBegin > 172800) {
-    windowBegin = windowEnd - 172800;
+  // ✅ NEW: Anchor story time near (now - lag) so we don't drift into dead zones forever
+  long targetStoryNow = nowUtc - st.lag_seconds;
+  if (st.sim_time_utc > targetStoryNow + 6 * 3600) {
+    st.sim_time_utc = targetStoryNow;
   }
 
-  // OpenSky partition rule: max 2 UTC calendar days
+  // ✅ NEW: Look AHEAD window (search forward from sim_time_utc)
+  long windowBegin = st.sim_time_utc;
+  long windowEnd   = st.sim_time_utc + (long)st.lookback_hours * 3600; // 36h lookahead
+
+  // Hard safety: never query more than 48h
+  if (windowEnd - windowBegin > 172800) {
+    windowEnd = windowBegin + 172800;
+  }
+
+  // OpenSky partition rule: query must not span >2 UTC calendar days
   auto dayIndex = [](long t) -> long { return t / 86400; };
-  long endDay = dayIndex(windowEnd);
   long beginDay = dayIndex(windowBegin);
+  long endDay   = dayIndex(windowEnd);
   if (endDay - beginDay > 1) {
-    windowBegin = (endDay - 1) * 86400;
+    // snap end to within 2 days
+    windowEnd = (beginDay + 2) * 86400 - 1;
   }
 
   std::vector<Flight> flights;
@@ -85,6 +96,7 @@ HopResult TravelerEngine::tick(TravelerState& st, long nowUtc) {
     return out;
   }
 
+  // Candidates: depart from current airport, depart at/after sim_time, have arrival, not self-hop
   std::vector<Flight> candidates;
   candidates.reserve(flights.size());
   for (const auto& f : flights) {
@@ -96,12 +108,14 @@ HopResult TravelerEngine::tick(TravelerState& st, long nowUtc) {
   }
 
   if (candidates.empty()) {
-    st.sim_time_utc += 3 * 3600;
+    // ✅ Advance story time forward, retry soon
+    st.sim_time_utc += 6 * 3600;        // bump 6 hours to escape dry windows faster
     st.next_event_utc = nowUtc + 5 * 60;
     out.reason = "No candidates in window; advanced story time + scheduled recheck.";
     return out;
   }
 
+  // Score candidates
   struct Scored { Flight f; double score; };
   std::vector<Scored> scored;
   scored.reserve(candidates.size());
@@ -111,6 +125,7 @@ HopResult TravelerEngine::tick(TravelerState& st, long nowUtc) {
     return a.score > b.score;
   });
 
+  // Exploration: 10% chance pick randomly among top 5
   static thread_local std::mt19937 gen(std::random_device{}());
   std::uniform_real_distribution<double> coin(0.0, 1.0);
 
@@ -127,9 +142,11 @@ HopResult TravelerEngine::tick(TravelerState& st, long nowUtc) {
   long departUtc = chosen.firstSeen;
   long arriveUtc = (chosen.lastSeen > 0 ? chosen.lastSeen : (departUtc + 2 * 3600));
 
+  // Real-time wait: next tick after flight duration
   long flightDuration = std::max(60L, arriveUtc - departUtc);
   st.next_event_utc = nowUtc + flightDuration;
 
+  // Advance story time and location
   st.sim_time_utc = arriveUtc;
   st.current_airport = chosen.estArrivalAirport;
   pushRecent(st, chosen.estArrivalAirport);
@@ -139,5 +156,6 @@ HopResult TravelerEngine::tick(TravelerState& st, long nowUtc) {
   out.depart_utc = departUtc;
   out.arrive_utc = arriveUtc;
   out.reason = "Hopped (personality scoring: " + st.personality + ").";
+
   return out;
 }

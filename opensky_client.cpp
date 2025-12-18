@@ -3,7 +3,6 @@
 #include <curl/curl.h>
 #include <stdexcept>
 #include <sstream>
-#include <iostream>
 #include <cctype>
 #include <utility>
 
@@ -28,7 +27,6 @@ std::string OpenSkyClient::httpGet(const std::string& url) {
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
 
-  // Add Bearer token header if provided
   struct curl_slist* headers = nullptr;
   if (!bearerToken_.empty()) {
     std::string auth = "Authorization: Bearer " + bearerToken_;
@@ -49,9 +47,7 @@ std::string OpenSkyClient::httpGet(const std::string& url) {
     throw std::runtime_error(oss.str());
   }
 
-  // ✅ IMPORTANT FIX:
-  // OpenSky sometimes returns 404 with body [] meaning "no data for this window".
-  // Treat it as a valid empty response instead of a fatal error.
+  // ✅ Treat 404 as "no data" (OpenSky sometimes returns 404 with [])
   if (http_code == 404) {
     return "[]";
   }
@@ -116,7 +112,6 @@ std::vector<Flight> OpenSkyClient::getDepartures(const std::string& airportIcao,
 
   std::string json = httpGet(url.str());
 
-  // Response is a JSON array of objects. We'll split by { ... } blocks.
   std::vector<Flight> flights;
   size_t pos = 0;
   while (true) {
@@ -143,4 +138,4 @@ std::vector<Flight> OpenSkyClient::getDepartures(const std::string& airportIcao,
   }
 
   return flights;
-}  // ✅ MISSING BRACE FIXED HERE
+}
