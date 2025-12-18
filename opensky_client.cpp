@@ -5,6 +5,7 @@
 #include <sstream>
 #include <iostream>
 #include <cctype>
+#include <utility>
 
 static size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* userp) {
   size_t total = size * nmemb;
@@ -142,3 +143,4 @@ std::vector<Flight> OpenSkyClient::getDepartures(const std::string& airportIcao,
   }
 
   return flights;
+}  // ✅ MISSING BRACE FIXED HERE
