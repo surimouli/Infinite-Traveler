@@ -7,3 +7,4 @@
 {"hop":6,"logged_at_utc":1765881067,"from":"KATL","to":"KTPA","depart_utc":1765828963,"arrive_utc":1765832597,"icao24":"a93631","callsign":"DAL1720","reason":"Hopped (earliest + random tie-break, avoided recent airport)."}
 {"hop":7,"logged_at_utc":1765885001,"from":"KTPA","to":"KBNA","depart_utc":1765833192,"arrive_utc":1765838979,"icao24":"abdcbe","callsign":"SWA1919","reason":"Hopped (earliest + random tie-break, avoided recent airport)."}
 {"hop":8,"logged_at_utc":1766089964,"from":"KBNA","to":"KM33","depart_utc":1766007002,"arrive_utc":1766007954,"icao24":"a8a1e7","callsign":"N65516","reason":"Hopped (personality scoring: chaotic)."}
+{"hop":9,"logged_at_utc":1766091259,"from":"KM33","to":"9TN9","depart_utc":1766011658,"arrive_utc":1766012368,"icao24":"a77ac4","callsign":"MTU81","reason":"Hopped (personality scoring: chaotic)."}
