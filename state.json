@@ -1,7 +1,7 @@
 {
   "current_airport": "9TN9",
-  "sim_time_utc": 1766033968,
-  "next_event_utc": 1766093277,
+  "sim_time_utc": 1766028792,
+  "next_event_utc": 1766093892,
   "lag_seconds": 86400,
   "lookback_hours": 36,
   "avoid_recent_n": 10,
