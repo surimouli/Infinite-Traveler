@@ -5,13 +5,7 @@
   "lag_seconds": 86400,
   "lookback_hours": 36,
   "avoid_recent_n": 10,
-<<<<<<< HEAD
   "hop_count": 0,
+  "personality": "chaotic",
   "recent_airports": []
-  "personality": "chaotic"
 }
-=======
-  "hop_count": 7,
-  "recent_airports": ["KMCO", "KMCO", "KJFK", "KRSW", "KATL", "KTPA", "KBNA"]
-}
->>>>>>> ce3becc01eb83a52a185fc0f2db2b0facd3849e1
