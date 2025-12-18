@@ -1,11 +1,11 @@
 {
-  "current_airport": "KBNA",
-  "sim_time_utc": 1766162979,
-  "next_event_utc": 1766089513,
+  "current_airport": "KM33",
+  "sim_time_utc": 1766007954,
+  "next_event_utc": 1766090916,
   "lag_seconds": 86400,
   "lookback_hours": 36,
   "avoid_recent_n": 10,
-  "hop_count": 7,
+  "hop_count": 8,
   "personality": "chaotic",
-  "recent_airports": ["KMCO", "KMCO", "KJFK", "KRSW", "KATL", "KTPA", "KBNA"]
+  "recent_airports": ["KMCO", "KMCO", "KJFK", "KRSW", "KATL", "KTPA", "KBNA", "KM33"]
 }
