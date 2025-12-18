@@ -92,10 +92,9 @@ static TravelerState loadState(const std::string& path, long& hopCount) {
   st.avoid_recent_n  = extractJsonInt(json, "avoid_recent_n", 10);
   st.recent_airports = extractRecentAirports(json);
 
-  // NEW (Phase 1): personality
   st.personality     = extractJsonString(json, "personality", "chaotic");
-
   hopCount           = extractJsonHopCount(json);
+
   return st;
 }
 
@@ -213,7 +212,6 @@ int main() {
     hopCount += 1;
     appendLogNdjson("trip_log.ndjson", now, before, hop, st, hopCount);
 
-    // Personality-flavored vibe line
     std::string vibe;
     if (st.personality == "chaotic") vibe = "Current mood: unhinged boarding pass energy.";
     else if (st.personality == "budget") vibe = "Current mood: saving money like it’s a sport.";
@@ -238,8 +236,6 @@ int main() {
               << "\n";
   }
 
-  // Save state every run
   writeFile("state.json", toJson(st, hopCount));
-
   return 0;
 }

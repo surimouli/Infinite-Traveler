@@ -47,6 +47,14 @@ std::string OpenSkyClient::httpGet(const std::string& url) {
     oss << "curl_easy_perform failed: " << curl_easy_strerror(res);
     throw std::runtime_error(oss.str());
   }
+
+  // ✅ IMPORTANT FIX:
+  // OpenSky sometimes returns 404 with body [] meaning "no data for this window".
+  // Treat it as a valid empty response instead of a fatal error.
+  if (http_code == 404) {
+    return "[]";
+  }
+
   if (http_code != 200) {
     std::ostringstream oss;
     oss << "HTTP " << http_code << " from OpenSky. Response: " << response;
@@ -134,4 +142,3 @@ std::vector<Flight> OpenSkyClient::getDepartures(const std::string& airportIcao,
   }
 
   return flights;
-}
