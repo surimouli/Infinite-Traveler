@@ -76,7 +76,6 @@ static std::vector<std::string> extractRecentAirports(const std::string& json) {
   return out;
 }
 
-// --- NEW: hop_count stored in state.json ---
 static long extractJsonHopCount(const std::string& json) {
   return extractJsonLong(json, "hop_count", 0);
 }
@@ -93,7 +92,10 @@ static TravelerState loadState(const std::string& path, long& hopCount) {
   st.avoid_recent_n  = extractJsonInt(json, "avoid_recent_n", 10);
   st.recent_airports = extractRecentAirports(json);
 
-  hopCount = extractJsonHopCount(json);
+  // NEW (Phase 1): personality
+  st.personality     = extractJsonString(json, "personality", "chaotic");
+
+  hopCount           = extractJsonHopCount(json);
   return st;
 }
 
@@ -107,6 +109,7 @@ static std::string toJson(const TravelerState& st, long hopCount) {
   o << "  \"lookback_hours\": " << st.lookback_hours << ",\n";
   o << "  \"avoid_recent_n\": " << st.avoid_recent_n << ",\n";
   o << "  \"hop_count\": " << hopCount << ",\n";
+  o << "  \"personality\": \"" << st.personality << "\",\n";
   o << "  \"recent_airports\": [";
   for (size_t i = 0; i < st.recent_airports.size(); i++) {
     o << "\"" << st.recent_airports[i] << "\"";
@@ -156,6 +159,7 @@ static void writeLatestCaption(const std::string& from,
                                long departUtc,
                                long arriveUtc,
                                const std::string& callsign,
+                               const std::string& personality,
                                const std::string& vibeLine) {
   std::ostringstream c;
   c << "Hop #" << hopNumber << " ✈️\n";
@@ -163,6 +167,7 @@ static void writeLatestCaption(const std::string& from,
   if (!callsign.empty()) c << "Flight: " << callsign << "\n";
   c << "Depart: " << formatUtc(departUtc) << "\n";
   c << "Arrive: " << formatUtc(arriveUtc) << "\n\n";
+  c << "Personality: " << personality << "\n";
   c << vibeLine << "\n\n";
   c << "#airport #travel #aviation #wanderlust #planespotting\n";
   writeFile("latest_caption.txt", c.str());
@@ -208,11 +213,16 @@ int main() {
     hopCount += 1;
     appendLogNdjson("trip_log.ndjson", now, before, hop, st, hopCount);
 
-    // Cute vibe line (we can make this fancier later)
-    std::string vibe = "Current mood: gate snacks + main character energy.";
+    // Personality-flavored vibe line
+    std::string vibe;
+    if (st.personality == "chaotic") vibe = "Current mood: unhinged boarding pass energy.";
+    else if (st.personality == "budget") vibe = "Current mood: saving money like it’s a sport.";
+    else if (st.personality == "scenic") vibe = "Current mood: window seat supremacy.";
+    else vibe = "Current mood: gate snacks + main character energy.";
 
     writeLatestCaption(before.current_airport, st.current_airport, hopCount,
-                       hop.depart_utc, hop.arrive_utc, hop.flight.callsign, vibe);
+                       hop.depart_utc, hop.arrive_utc, hop.flight.callsign,
+                       st.personality, vibe);
 
     writeLatestPostJson(before, st, hop, hopCount);
 
