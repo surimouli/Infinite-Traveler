@@ -1,11 +1,11 @@
 {
-  "current_airport": "9TN9",
-  "sim_time_utc": 1766130786,
-  "next_event_utc": 1766195886,
+  "current_airport": "KMBT",
+  "sim_time_utc": 1766171528,
+  "next_event_utc": 1766200752,
   "lag_seconds": 86400,
   "lookback_hours": 36,
   "avoid_recent_n": 10,
-  "hop_count": 9,
+  "hop_count": 10,
   "personality": "chaotic",
-  "recent_airports": ["KMCO", "KMCO", "KJFK", "KRSW", "KATL", "KTPA", "KBNA", "KM33", "9TN9"]
+  "recent_airports": ["KMCO", "KMCO", "KJFK", "KRSW", "KATL", "KTPA", "KBNA", "KM33", "9TN9", "KMBT"]
 }
