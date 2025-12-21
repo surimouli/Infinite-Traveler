@@ -1,7 +1,7 @@
 {
   "current_airport": "K0M5",
-  "sim_time_utc": 1766256421,
-  "next_event_utc": 1766321521,
+  "sim_time_utc": 1766278021,
+  "next_event_utc": 1766323389,
   "lag_seconds": 86400,
   "lookback_hours": 36,
   "avoid_recent_n": 10,
