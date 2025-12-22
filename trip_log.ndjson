@@ -13,3 +13,4 @@
 {"hop":12,"logged_at_utc":1766208175,"from":"0TN5","to":"KJWN","depart_utc":1766156351,"arrive_utc":1766157101,"icao24":"a08ec4","callsign":"N135LF","reason":"Hopped (personality scoring: chaotic)."}
 {"hop":13,"logged_at_utc":1766209228,"from":"KJWN","to":"K0M5","depart_utc":1766150253,"arrive_utc":1766151040,"icao24":"ad3027","callsign":"N949S","reason":"Hopped (personality scoring: chaotic)."}
 {"hop":14,"logged_at_utc":1766373091,"from":"K0M5","to":"3TN4","depart_utc":1766346829,"arrive_utc":1766350108,"icao24":"a4e3b7","callsign":"N414HM","reason":"Hopped (personality scoring: chaotic)."}
+{"hop":15,"logged_at_utc":1766376685,"from":"3TN4","to":"KI53","depart_utc":1766349331,"arrive_utc":1766352944,"icao24":"a7f53c","callsign":"N6113F","reason":"Hopped (personality scoring: chaotic)."}

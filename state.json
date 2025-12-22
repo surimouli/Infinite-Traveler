@@ -1,11 +1,11 @@
 {
-  "current_airport": "3TN4",
-  "sim_time_utc": 1766350108,
-  "next_event_utc": 1766376370,
+  "current_airport": "KI53",
+  "sim_time_utc": 1766352944,
+  "next_event_utc": 1766380298,
   "lag_seconds": 86400,
   "lookback_hours": 36,
   "avoid_recent_n": 10,
-  "hop_count": 14,
+  "hop_count": 15,
   "personality": "chaotic",
-  "recent_airports": ["KATL", "KTPA", "KBNA", "KM33", "9TN9", "KMBT", "0TN5", "KJWN", "K0M5", "3TN4"]
+  "recent_airports": ["KTPA", "KBNA", "KM33", "9TN9", "KMBT", "0TN5", "KJWN", "K0M5", "3TN4", "KI53"]
 }
