@@ -1,7 +1,7 @@
 {
   "current_airport": "KI53",
-  "sim_time_utc": 1766714174,
-  "next_event_utc": 1766758742,
+  "sim_time_utc": 1766694927,
+  "next_event_utc": 1766760027,
   "lag_seconds": 86400,
   "lookback_hours": 36,
   "avoid_recent_n": 10,
